@@ -147,28 +147,29 @@ async def _scrape_faculty_index(page, url: str, categoria: str, visited: set) ->
 async def _scrape_calendar(page, url: str, categoria: str) -> list[dict]:
     docs = []
     try:
-        logger.info(f"[dynamic/calendar] Indexando: {url}")
-        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-        await page.wait_for_timeout(2000)
+        logger.info(f"[dynamic/calendar] Descubriendo calendarios en: {url}")
+        import requests as _requests
+        from bs4 import BeautifulSoup as _BS
+        from urllib.parse import urljoin as _urljoin
 
-        cards = await page.evaluate(
-            """() => {
-                const results = [];
-                document.querySelectorAll('a[href]').forEach(a => {
-                    results.push({ text: a.innerText || a.textContent, href: a.href });
-                });
-                return results;
-            }"""
+        resp = _requests.get(
+            url,
+            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=20,
         )
+        resp.raise_for_status()
+        soup = _BS(resp.text, "html.parser")
 
         best = None
         best_tuple = (-1, -1)
 
-        for card in cards:
-            text = card.get("text", "")
-            href = card.get("href", "")
-            m = CALENDAR_PATTERN.search(text)
-            if m and href:
+        for a in soup.find_all("a", href=True):
+            text = a.get_text(strip=True)
+            href = _urljoin(url, a["href"])
+            if "calendario" not in href.lower() and "calendario" not in text.lower():
+                continue
+            m = CALENDAR_PATTERN.search(href) or CALENDAR_PATTERN.search(text)
+            if m:
                 t = (int(m.group(1)), int(m.group(2)))
                 if t > best_tuple:
                     best_tuple = t
@@ -179,21 +180,27 @@ async def _scrape_calendar(page, url: str, categoria: str) -> list[dict]:
             return docs
 
         logger.info(f"[dynamic/calendar] Semestre más reciente: {best['label']} → {best['href']}")
-        await page.goto(best["href"], wait_until="domcontentloaded", timeout=30000)
-        await page.wait_for_timeout(2000)
 
-        texto = await _extract_text_from_page(page)
-        if texto.strip():
-            docs.append(
-                {
-                    "url": best["href"],
-                    "categoria": categoria,
-                    "texto": texto.strip(),
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "tipo": "web",
-                    "titulo": best["label"],
-                }
-            )
+        if best["href"].lower().endswith(".pdf"):
+            from .pdf_extractor import extract_pdf
+            doc = extract_pdf(best["href"], categoria)
+            if doc:
+                docs.append(doc)
+        else:
+            await page.goto(best["href"], wait_until="domcontentloaded", timeout=30000)
+            await page.wait_for_timeout(2000)
+            texto = await _extract_text_from_page(page)
+            if texto.strip():
+                docs.append(
+                    {
+                        "url": best["href"],
+                        "categoria": categoria,
+                        "texto": texto.strip(),
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "tipo": "web",
+                        "titulo": best["label"],
+                    }
+                )
 
     except Exception as exc:
         logger.error(f"[dynamic/calendar] Error en {url}: {exc}")
