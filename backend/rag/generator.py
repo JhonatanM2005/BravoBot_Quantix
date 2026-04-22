@@ -9,7 +9,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GENERATOR_MODEL = "gemini-2.5-flash"
+GENERATOR_MODEL = "gemini-3.1-flash-lite-preview"
 
 SYSTEM_PROMPT = """Eres BravoBot, el asistente virtual oficial de la Institución Universitaria Pascual Bravo.
 Tu rol es ayudar a los aspirantes a obtener información clara, precisa y confiable sobre la institución.
@@ -28,7 +28,7 @@ REGLAS ESTRICTAS:
 CONTEXTO:
 {contexto}
 
-PREGUNTA DEL ASPIRANTE:
+{historial}PREGUNTA DEL ASPIRANTE:
 {query}
 
 RESPUESTA:"""
@@ -77,6 +77,7 @@ def generate_response(
     query: str,
     chunks: list[dict],
     malla_context: dict | None = None,
+    history: list[dict] | None = None,
 ) -> dict:
     if not chunks and not malla_context:
         return {"respuesta": NO_INFO_RESPONSE, "fuentes": []}
@@ -84,17 +85,39 @@ def generate_response(
     contexto = _build_contexto(chunks, malla_context)
     fuentes = list(dict.fromkeys(c["url"] for c in chunks if c.get("url")))
 
-    prompt = SYSTEM_PROMPT.format(contexto=contexto, query=query)
+    historial_str = ""
+    if history:
+        historial_str = "HISTORIAL DE CONVERSACIÓN RECIENTE:\n"
+        for msg in history:
+            role = "Aspirante" if msg["role"] == "user" else "BravoBot"
+            historial_str += f"{role}: {msg['text']}\n"
+        historial_str += "\n"
+
+    prompt = SYSTEM_PROMPT.format(contexto=contexto, query=query, historial=historial_str)
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model=GENERATOR_MODEL,
-            contents=prompt,
-        )
+        
+        modelos_fallback = [GENERATOR_MODEL, "gemini-2.5-flash", "gemini-1.5-flash"]
+        response = None
+        
+        for model_name in modelos_fallback:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+                logger.info(f"Generador usó exitosamente: {model_name}")
+                break
+            except Exception as e:
+                logger.warning(f"Generador falló con {model_name}: {e}")
+                
+        if not response:
+            raise Exception("Todos los modelos de fallback fallaron en el generador")
+            
         respuesta = response.text.strip()
     except Exception as exc:
-        logger.error(f"Error en generator: {exc}")
+        logger.error(f"Error crítico en generator: {exc}")
         respuesta = NO_INFO_RESPONSE
         fuentes = []
 

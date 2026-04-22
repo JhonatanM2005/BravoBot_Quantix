@@ -15,8 +15,8 @@ _MALLA_KEYWORDS = {
 
 
 def _needs_malla(query: str, categorias: list[str]) -> bool:
-    if "programas" not in categorias:
-        return False
+    # Eliminamos la restricción estricta de la categoría "programas"
+    # ya que si el router falla (ej. error 503 o 429), la categoría será "general"
     query_words = set(query.lower().split())
     return bool(query_words & _MALLA_KEYWORDS)
 
@@ -36,7 +36,7 @@ def _build_malla_context(query: str) -> dict | None:
     return None
 
 
-def ask(query: str) -> dict:
+def ask(query: str, history: list[dict] = None) -> dict:
     logger.info(f"Query recibida: {query!r}")
 
     categorias = classify_query(query)
@@ -50,7 +50,7 @@ def ask(query: str) -> dict:
         logger.info("Activando malla_lookup para query de malla/materias")
         malla_context = _build_malla_context(query)
 
-    result = generate_response(query, chunks, malla_context=malla_context)
+    result = generate_response(query, chunks, malla_context=malla_context, history=history)
 
     return {
         "respuesta": result["respuesta"],

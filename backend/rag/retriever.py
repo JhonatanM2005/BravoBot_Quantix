@@ -17,7 +17,7 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "paraphrase-multilingual-MiniLM-L
 MIN_SCORE = float(os.getenv("MIN_SCORE", "0.30"))
 EXPAND_QUERIES = os.getenv("EXPAND_QUERIES", "true").lower() == "true"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-ROUTER_MODEL = "gemini-2.5-flash"
+ROUTER_MODEL = "gemini-3.1-flash-lite-preview"
 
 _RRF_K = 60
 
@@ -55,15 +55,28 @@ def expand_query(query: str) -> list[str]:
         return queries
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model=ROUTER_MODEL,
-            contents=_EXPAND_PROMPT.format(query=query),
-        )
+        
+        modelos_fallback = [ROUTER_MODEL, "gemini-2.5-flash", "gemini-1.5-flash"]
+        response = None
+        
+        for model_name in modelos_fallback:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=_EXPAND_PROMPT.format(query=query),
+                )
+                break
+            except Exception as e:
+                logger.warning(f"expand_query falló con {model_name}: {e}")
+                
+        if not response:
+            raise Exception("Todos los modelos de fallback fallaron en expand_query")
+
         lines = [line.strip() for line in response.text.strip().splitlines() if line.strip()]
         queries.extend(lines[:2])
         logger.info(f"Multi-query expansion: {len(queries)} variantes generadas")
     except Exception as exc:
-        logger.warning(f"expand_query falló, usando solo query original: {exc}")
+        logger.warning(f"expand_query falló críticamente, usando solo query original: {exc}")
     return queries
 
 

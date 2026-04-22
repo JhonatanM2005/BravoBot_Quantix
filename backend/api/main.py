@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from rag.pipeline import ask
 from rag.retriever import get_collection
+from rag.router import VALID_CATEGORIES
 
 logging.basicConfig(
     level=logging.INFO,
@@ -47,24 +48,63 @@ async def startup_event():
 
 class ChatRequest(BaseModel):
     query: str
+    session_id: str | None = None
 
 
 class ChatResponse(BaseModel):
     respuesta: str
     fuentes: list[str]
     categoria: str
+    categorias: list[str]
+    session_id: str | None = None
+
+
+# Almacenamiento en memoria para el historial de conversaciones
+# Formato: { "session_id": [{"role": "user", "text": "..." }, {"role": "model", "text": "..."}] }
+sessions: dict[str, list[dict]] = {}
+MAX_HISTORY_LENGTH = 10  # Máximo número de mensajes a guardar por sesión
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="La query no puede estar vacía.")
+    
     try:
-        result = ask(request.query)
-        return ChatResponse(**result)
+        session_id = request.session_id
+        history = []
+        
+        if session_id:
+            if session_id not in sessions:
+                sessions[session_id] = []
+            history = sessions[session_id]
+
+        # Llamada al pipeline RAG con historial
+        result = ask(request.query, history=history)
+
+        # Actualizar historial
+        if session_id:
+            sessions[session_id].append({"role": "user", "text": request.query})
+            sessions[session_id].append({"role": "model", "text": result["respuesta"]})
+            # Mantener solo los últimos N mensajes
+            if len(sessions[session_id]) > MAX_HISTORY_LENGTH:
+                sessions[session_id] = sessions[session_id][-MAX_HISTORY_LENGTH:]
+
+        return ChatResponse(
+            respuesta=result["respuesta"],
+            fuentes=result["fuentes"],
+            categoria=result["categoria"],
+            categorias=result.get("categorias", [result["categoria"]]),
+            session_id=session_id
+        )
     except Exception as exc:
         logger.error(f"Error en /chat: {exc}")
         raise HTTPException(status_code=500, detail="Error interno del servidor.")
+
+
+@app.get("/categorias")
+async def get_categorias():
+    return {"categorias": list(VALID_CATEGORIES)}
 
 
 @app.get("/health")
