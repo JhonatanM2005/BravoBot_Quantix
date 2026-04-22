@@ -1,6 +1,8 @@
 import logging
 import os
+import re
 import uuid
+from urllib.parse import urlparse
 
 import chromadb
 from dotenv import load_dotenv
@@ -15,11 +17,14 @@ logger = logging.getLogger(__name__)
 
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./chroma_db")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "bravobot")
-CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "paraphrase-multilingual-MiniLM-L12-v2")
 
 _model: SentenceTransformer | None = None
+
+_POSGRADO_RE = re.compile(
+    r"/programas/(?:especializacion|maestria|doctorado|posgrado)",
+    re.IGNORECASE,
+)
 
 
 def _get_model() -> SentenceTransformer:
@@ -45,6 +50,31 @@ def _get_collection(reset: bool = False) -> chromadb.Collection:
     return collection
 
 
+def _extract_titulo(texto_limpio: str) -> str:
+    for line in texto_limpio.split("\n"):
+        stripped = line.strip()
+        if len(stripped) > 10:
+            return stripped[:120]
+    return ""
+
+
+def _extract_program_name(url: str, texto_limpio: str) -> str:
+    path = urlparse(url).path.rstrip("/")
+    slug = path.split("/")[-1]
+    if not slug:
+        return ""
+    name = slug.replace("-", " ").replace("_", " ").title()
+    return name
+
+
+def _extract_level(url: str, categoria: str) -> str:
+    if categoria != "programas":
+        return ""
+    if _POSGRADO_RE.search(url):
+        return "posgrado"
+    return "pregrado"
+
+
 def build_index(raw_pages: list[dict], reset: bool = False) -> None:
     if not raw_pages:
         logger.warning("No hay documentos para indexar.")
@@ -65,10 +95,14 @@ def build_index(raw_pages: list[dict], reset: bool = False) -> None:
             continue
 
         texto_limpio = clean_text(texto_raw)
-        chunks = chunk_text(texto_limpio, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP)
+        chunks = chunk_text(texto_limpio, tipo=tipo)
 
         if not chunks:
             continue
+
+        titulo = _extract_titulo(texto_limpio)
+        program_name = _extract_program_name(url, texto_limpio) if categoria == "programas" else ""
+        level = _extract_level(url, categoria)
 
         logger.info(f"Indexando {len(chunks)} chunks de: {url}")
 
@@ -85,6 +119,9 @@ def build_index(raw_pages: list[dict], reset: bool = False) -> None:
                 "categoria": categoria,
                 "tipo": tipo,
                 "chunk_index": i,
+                "titulo": titulo,
+                "program_name": program_name,
+                "level": level,
             }
             for i in range(len(chunks))
         ]

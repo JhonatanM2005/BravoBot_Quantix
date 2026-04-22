@@ -145,7 +145,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Presencial-Tecnologia-en-Sistemas-Mecatronicos.pdf"
     },
     {
       "name": "INGENIERÍA EN LOGÍSTICA",
@@ -389,7 +390,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/07/malla-curricular-ingenieria-logistica-2023.pdf"
     },
     {
       "name": "INGENIERÍA DE MATERIALES",
@@ -626,7 +628,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2021/05/malla-curricular-ingenieria-materiales.pdf"
     },
     {
       "name": "MAESTRÍA EN DISEÑO Y EVALUACIÓN DE PROYECTOS REGIONALES",
@@ -713,7 +716,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/maestria-en-diseno-y-evaluacion-de-proyectos-regionales-pascual-bravo-1.pdf"
     },
     {
       "name": "MAESTRÍA EN CIENCIAS COMPUTACIONALES (INVESTIGACIÓN)",
@@ -776,7 +780,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/maestria-en-ciencias-computacionales-investigacion-profundizacion-pascual-bravo-1.pdf"
     },
     {
       "name": "MAESTRÍA EN CIENCIAS COMPUTACIONALES (PROFUNDIZACIÓN)",
@@ -851,7 +856,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/maestria-en-ciencias-computacionales-investigacion-profundizacion-pascual-bravo-1.pdf"
     },
     {
       "name": "ESPECIALIZACIÓN EN BIG DATA",
@@ -908,7 +914,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/especializacion-en-big-data-pascual-bravo-1.pdf"
     },
     {
       "name": "TÉCNICA PROFESIONAL EN FABRICACIÓN DIGITAL E IMPRESIÓN 3D",
@@ -1015,7 +1022,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/05/malla-curricular-tecnica-profesional-en-fabricacion-digital-e-impresion-3d-pascual-bravo.pdf"
     },
     {
       "name": "MAESTRÍA EN ENERGÍA",
@@ -1086,7 +1094,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/maestria-en-energia-pascual-bravo-1.pdf"
     },
     {
       "name": "ESPECIALIZACIÓN EN INTERNET DE LAS COSAS - IOT",
@@ -1143,7 +1152,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2024/05/especializacion-en-internet-de-las-cosas-iot-pascual-bravo-1.pdf"
     },
     {
       "name": "MAESTRÍA EN GERENCIA DE LA TRANSFORMACIÓN DIGITAL",
@@ -1226,7 +1236,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/maestria-en-gerencia-de-la-transformacion-digital-pascual-bravo-1.pdf"
     },
     {
       "name": "ESPECIALIZACIÓN EN GESTIÓN DE PROYECTOS",
@@ -1271,7 +1282,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/12/especializacion-en-gestion-de-proyectos-pascual-bravo.pdf"
     },
     {
       "name": "ESPECIALIZACIÓN EN DISEÑO DE EXPERIENCIAS DIGITALES",
@@ -1316,7 +1328,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/12/especializacion-en-diseno-avanzado-por-computador-1.pdf"
     },
     {
       "name": "ESPECIALIZACIÓN EN GESTIÓN DE ACTIVOS",
@@ -1373,7 +1386,8 @@
           ]
         }
       ],
-      "level": "posgrado"
+      "level": "posgrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2024/05/especializacion-en-gestion-de-activos-pascual-bravo-1.pdf"
     },
     {
       "name": "INGENIERÍA ELÉCTRICA",
@@ -1634,7 +1648,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2021/05/malla-curricular-ingenieria-electrica.pdf"
     },
     {
       "name": "TECNOLOGÍA EN MECÁNICA INDUSTRIAL",
@@ -1791,7 +1806,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/09/Malla-Tecnologia-en-Mecanica-Industrial.pdf"
     },
     {
       "name": "TECNOLOGÍA EN SUPERVISIÓN DE SISTEMAS DE GENERACIÓN Y DISTRIBUCIÓN DE ENERGÍA ELÉCTRICA",
@@ -1944,7 +1960,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/03/malla-curricular-tecnologia-en-supervision-de-sistemas-de-generacion-y-distribucion-de-energia-electrica-pascual-bravo.pdf"
     },
     {
       "name": "TECNOLOGÍA EN ELECTRÓNICA INDUSTRIAL",
@@ -2101,7 +2118,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Tecnologia-en-Electronica-Industrial.pdf"
     },
     {
       "name": "TECNOLOGÍA EN GESTIÓN DEL MANTENIMIENTO AERONÁUTICO",
@@ -2258,7 +2276,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/12/Malla-Tecnologia-en-Gestion-del-Mantenimiento-Aeronautico-3.pdf"
     },
     {
       "name": "TECNOLOGÍA EN MECÁNICA AUTOMOTRIZ",
@@ -2411,7 +2430,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/09/Malla-Tecnologia-en-Mecanica-Automotriz.pdf"
     },
     {
       "name": "TECNOLOGÍA EN DESARROLLO DE SOFTWARE",
@@ -2564,7 +2584,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/06/Malla-Presencial-Tecnologia-en-Desarrollo-de-Software.pdf"
     },
     {
       "name": "TECNOLOGÍA EN GESTIÓN LOGÍSTICA",
@@ -2749,7 +2770,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/05/malla-curricular-tecnologia-Gestion-Logistica.pdf"
     },
     {
       "name": "INGENIERÍA INDUSTRIAL",
@@ -3038,7 +3060,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/06/Malla-Ingenieria-Industrial.pdf"
     },
     {
       "name": "TECNOLOGÍA EN SISTEMAS ELECTROMECÁNICOS",
@@ -3219,7 +3242,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2021/05/malla-curricular-tecnologia-sistemas-electromecanicos.pdf"
     },
     {
       "name": "TECNOLOGÍA EN ANIMACIÓN DIGITAL",
@@ -3396,7 +3420,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Tecnologia-en-Animacion-Digital.pdf"
     },
     {
       "name": "PROFESIONAL EN GESTIÓN DEL DISEÑO",
@@ -3603,7 +3628,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2026/01/Malla-Profesional-en-Gestion-del-Diseno.pdf"
     },
     {
       "name": "PROFESIONAL EN DISEÑO GRÁFICO",
@@ -3892,7 +3918,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Profesional-en-Diseno-Grafico.pdf"
     },
     {
       "name": "INGENIERÍA ADMINISTRATIVA",
@@ -4109,7 +4136,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/08/Malla-Ingenieria-Administrativa.pdf"
     },
     {
       "name": "TECNOLOGÍA EN DISEÑO Y PRODUCCIÓN DE VESTUARIO",
@@ -4266,7 +4294,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/09/Malla-Tecnologia-en-Diseno-y-Produccion-de-Vestuario-1.pdf"
     },
     {
       "name": "TECNOLOGÍA EN PRODUCCIÓN INDUSTRIAL",
@@ -4451,7 +4480,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2023/08/malla-curricular-tecnologia-produccion-industrial-2023.pdf"
     },
     {
       "name": "TECNOLOGÍA EN DISEÑO Y PRODUCCIÓN GRÁFICA",
@@ -4584,7 +4614,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/09/Malla-Tecnologia-en-Diseno-y-Produccion-Grafica.pdf"
     },
     {
       "name": "TECNOLOGÍA EN SISTEMAS MECATRÓNICOS",
@@ -4729,7 +4760,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Presencial-Tecnologia-en-Sistemas-Mecatronicos.pdf"
     },
     {
       "name": "TECNOLOGÍA EN DESARROLLO DE SOFTWARE",
@@ -4854,7 +4886,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/06/Malla-Presencial-Tecnologia-en-Desarrollo-de-Software.pdf"
     },
     {
       "name": "INGENIERÍA DE SOFTWARE",
@@ -5087,7 +5120,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Ingenieria-de-Software.pdf"
     },
     {
       "name": "INGENIERÍA MECÁNICA",
@@ -5332,7 +5366,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/09/Malla-Ingenieria-Mecanica.pdf"
     },
     {
       "name": "PROFESIONAL EN DISEÑO DE VESTUARIO",
@@ -5561,7 +5596,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2025/10/Malla-Profesional-en-Diseno-de-Vestuario.pdf"
     },
     {
       "name": "TECNOLOGÍA ELÉCTRICA",
@@ -5694,7 +5730,8 @@
           ]
         }
       ],
-      "level": "pregrado"
+      "level": "pregrado",
+      "url_pdf": "https://pascualbravo.edu.co/wp-content/uploads/2021/05/malla-curricular-tecnologia-electrica.pdf"
     }
   ]
 }
