@@ -1,14 +1,58 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import ChatWindow from './ChatWindow'
 import InputBar from './InputBar'
 import { Message } from './MessageBubble'
-import axios from 'axios'
+import { sendMessage as apiSendMessage } from '../services/api'
+import type { ApiError } from '../services/api'
+import { useHealthCheck } from '../hooks/useHealthCheck'
 
-const API_URL = '/chat'
+// ── Constantes ──────────────────────────────────────────────────────────────
+const SESSION_KEY = 'bravobot_session_id'
+const MESSAGES_KEY = 'bravobot_messages'
 
 let msgCounter = 0
 function nextId() {
   return `msg-${++msgCounter}`
+}
+
+/** Genera o recupera el session_id persistente en localStorage */
+function getOrCreateSessionId(): string {
+  const stored = localStorage.getItem(SESSION_KEY)
+  if (stored) return stored
+  const newId = crypto.randomUUID().replace(/-/g, '').slice(0, 32)
+  localStorage.setItem(SESSION_KEY, newId)
+  return newId
+}
+
+/** Carga el historial de mensajes persistido */
+function loadMessages(): Message[] {
+  try {
+    const raw = localStorage.getItem(MESSAGES_KEY)
+    return raw ? (JSON.parse(raw) as Message[]) : []
+  } catch {
+    return []
+  }
+}
+
+/** Persiste el historial de mensajes */
+function saveMessages(msgs: Message[]) {
+  try {
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(msgs))
+  } catch {
+    // localStorage lleno o bloqueado — ignorar silenciosamente
+  }
+}
+
+/** Traduce un ApiError a texto amigable para el usuario */
+function errorText(err: ApiError): string {
+  switch (err.code) {
+    case 'network':    return 'Sin conexión con el servidor. Verifica que el backend esté activo.'
+    case 'timeout':    return 'El servidor tardó demasiado en responder. Intenta de nuevo.'
+    case 'validation': return 'Tu pregunta no pudo procesarse. Verifica el texto ingresado.'
+    case 'rate_limit': return 'Demasiadas solicitudes activas. Espera un momento e intenta de nuevo.'
+    case 'server':     return err.message
+    default:           return 'Ocurrió un error inesperado. Por favor intenta de nuevo o visita pascualbravo.edu.co.'
+  }
 }
 
 /* ── Close icon ── */
@@ -20,19 +64,21 @@ function CloseIcon() {
   )
 }
 
-/* ── Chat bubble icon (when closed) ── */
-function ChatBubbleIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  )
-}
-
 export default function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [isOpen, setIsOpen]     = useState(false)
+  const [messages, setMessages] = useState<Message[]>(loadMessages)
   const [isLoading, setIsLoading] = useState(false)
+
+  // session_id persistente en localStorage — sobrevive recargas
+  const sessionIdRef = useRef<string>(getOrCreateSessionId())
+
+  // Health check al montar el componente
+  const backendStatus = useHealthCheck()
+
+  // Persistir mensajes cada vez que cambian
+  useEffect(() => {
+    saveMessages(messages)
+  }, [messages])
 
   const sendMessage = async (text: string) => {
     const userMsg: Message = { id: nextId(), role: 'user', content: text }
@@ -40,7 +86,12 @@ export default function ChatWidget() {
     setIsLoading(true)
 
     try {
-      const { data } = await axios.post(API_URL, { query: text })
+      const data = await apiSendMessage(text, sessionIdRef.current)
+      // Si el backend devuelve un session_id actualizado, sincronizarlo
+      if (data.session_id && data.session_id !== sessionIdRef.current) {
+        sessionIdRef.current = data.session_id
+        localStorage.setItem(SESSION_KEY, data.session_id)
+      }
       const botMsg: Message = {
         id: nextId(),
         role: 'bot',
@@ -49,12 +100,11 @@ export default function ChatWidget() {
         categoria: data.categoria,
       }
       setMessages((prev) => [...prev, botMsg])
-    } catch {
+    } catch (err) {
       const errorMsg: Message = {
         id: nextId(),
         role: 'bot',
-        content:
-          'Ocurrió un error al procesar tu pregunta. Por favor intenta de nuevo o visita pascualbravo.edu.co directamente.',
+        content: errorText(err as ApiError),
       }
       setMessages((prev) => [...prev, errorMsg])
     } finally {
@@ -66,6 +116,26 @@ export default function ChatWidget() {
     if (isLoading) return
     sendMessage(text)
   }
+
+  /** Nueva conversación: limpia mensajes y regenera session_id */
+  const handleNewConversation = () => {
+    setMessages([])
+    localStorage.removeItem(MESSAGES_KEY)
+    const newId = crypto.randomUUID().replace(/-/g, '').slice(0, 32)
+    sessionIdRef.current = newId
+    localStorage.setItem(SESSION_KEY, newId)
+  }
+
+  // ── Indicador de estado del backend ────────────────────────────────────────
+  const statusDot =
+    backendStatus === 'checking' ? '#F29A01'   // amarillo: verificando
+    : backendStatus === 'online'  ? '#00B87C'  // verde: conectado
+    : '#D8473A'                                // rojo: offline
+
+  const statusLabel =
+    backendStatus === 'checking' ? 'Conectando…'
+    : backendStatus === 'online'  ? 'Asistente institucional'
+    : 'Servicio no disponible'
 
   return (
     <>
@@ -148,18 +218,19 @@ export default function ChatWidget() {
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  background: '#00B87C',
+                  background: statusDot,
                   display: 'inline-block',
+                  transition: 'background 0.4s',
                 }}
               />
-              Asistente institucional
+              {statusLabel}
             </div>
           </div>
 
           {/* New conversation button */}
           {messages.length > 0 && (
             <button
-              onClick={() => setMessages([])}
+              onClick={handleNewConversation}
               style={{
                 background: 'rgba(255,255,255,0.1)',
                 border: '1px solid rgba(255,255,255,0.2)',
@@ -208,10 +279,27 @@ export default function ChatWidget() {
           </button>
         </div>
 
+        {/* Banner offline */}
+        {backendStatus === 'offline' && (
+          <div
+            style={{
+              background: '#D8473A',
+              color: '#fff',
+              fontSize: '11px',
+              fontFamily: '"Open Sans", sans-serif',
+              padding: '6px 16px',
+              textAlign: 'center',
+              flexShrink: 0,
+            }}
+          >
+            ⚠️ El servicio no está disponible en este momento. Intenta más tarde.
+          </div>
+        )}
+
         {/* Chat body */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <ChatWindow messages={messages} isLoading={isLoading} onSuggestion={handleSuggestion} />
-          <InputBar onSend={sendMessage} disabled={isLoading} />
+          <InputBar onSend={sendMessage} disabled={isLoading || backendStatus === 'offline'} />
         </div>
       </div>
 
