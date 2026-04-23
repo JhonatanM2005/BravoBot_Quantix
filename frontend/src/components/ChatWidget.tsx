@@ -69,10 +69,29 @@ function shouldStartWizard(text: string): boolean {
   return WIZARD_TRIGGER_PATTERNS.some((p) => p.test(text))
 }
 
+/* ── Fullscreen icon ── */
+function FullscreenIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M8 21H5a2 2 0 0 0-2-2v-3M21 16v3a2 2 0 0 0-2 2h-3" />
+    </svg>
+  )
+}
+
+/* ── Restore icon ── */
+function RestoreIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+    </svg>
+  )
+}
+
 export default function ChatWidget() {
-  const [isOpen, setIsOpen]     = useState(false)
-  const [messages, setMessages] = useState<Message[]>(loadMessages)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen]         = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [messages, setMessages]     = useState<Message[]>(loadMessages)
+  const [isLoading, setIsLoading]   = useState(false)
 
   // session_id persistente en localStorage — sobrevive recargas
   const sessionIdRef = useRef<string>(getOrCreateSessionId())
@@ -225,20 +244,20 @@ export default function ChatWidget() {
         className={`chat-widget-panel ${isOpen ? 'chat-widget-open' : 'chat-widget-closed'}`}
         style={{
           position: 'fixed',
-          bottom: '96px',
-          right: '24px',
-          width: '420px',
-          height: '560px',
+          bottom: isFullscreen ? '0' : '96px',
+          right:  isFullscreen ? '0' : '24px',
+          width:  isFullscreen ? '100vw' : '520px',
+          height: isFullscreen ? '100vh' : '680px',
           zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: '16px',
+          borderRadius: isFullscreen ? '0' : '16px',
           overflow: 'hidden',
           boxShadow: isOpen ? '0 12px 48px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.05)' : 'none',
           opacity: isOpen ? 1 : 0,
           transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
           pointerEvents: isOpen ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease, transform 0.3s ease',
+          transition: 'opacity 0.3s ease, transform 0.3s ease, width 0.3s ease, height 0.3s ease, bottom 0.3s ease, right 0.3s ease, border-radius 0.3s ease',
           background: '#F2F6F9',
         }}
       >
@@ -336,6 +355,29 @@ export default function ChatWidget() {
               Nueva
             </button>
           )}
+
+          {/* Fullscreen toggle button */}
+          <button
+            onClick={() => setIsFullscreen((prev) => !prev)}
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              borderRadius: '8px',
+              color: '#fff',
+              cursor: 'pointer',
+              padding: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+            aria-label={isFullscreen ? 'Restaurar tamaño' : 'Pantalla completa'}
+            title={isFullscreen ? 'Restaurar tamaño' : 'Pantalla completa'}
+          >
+            {isFullscreen ? <RestoreIcon /> : <FullscreenIcon />}
+          </button>
 
           {/* Close button */}
           <button
@@ -478,7 +520,7 @@ export default function ChatWidget() {
           to { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 480px) {
-          .chat-widget-panel {
+          .chat-widget-panel:not(.chat-widget-fullscreen) {
             width: calc(100vw - 16px) !important;
             height: calc(100vh - 120px) !important;
             right: 8px !important;
