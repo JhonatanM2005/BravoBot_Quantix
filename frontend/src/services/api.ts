@@ -2,20 +2,28 @@
 // BravoBot API Service
 //
 // Centraliza toda la comunicación HTTP con el backend FastAPI.
-// En Docker, VITE_API_URL es vacío y nginx maneja el proxy.
-// En dev local, VITE_API_URL = http://localhost:8000
+//
+// Modos de operación:
+//   • Docker (mismo host)  → VITE_API_URL=""  y nginx proxea /chat, /health, /categorias
+//   • Dev local            → VITE_API_URL=http://localhost:8000
+//   • Producción estática  → VITE_API_URL=https://jhonatanm05-bravobot-api.hf.space
+//     ⚠️  IMPORTANTE: cuando el frontend está en Vercel (plan Hobby) u otro
+//         hosting serverless, NO pases por una API Route de Next/Vercel —
+//         llama DIRECTAMENTE a la URL del HF Space para evitar el corte de 10 s.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import axios, { AxiosError } from 'axios'
 import type { ChatRequest, ChatResponse, HealthResponse, CategoriasResponse } from './types'
 
-// Base URL: vacía en Docker (mismo origen via nginx), o URL explícita en dev
+// BASE_URL: vacío → mismo origen (Docker/nginx). Con valor → URL absoluta del backend.
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
 
 const client = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 60_000, // 60 s — el pipeline RAG puede tardar (followup hace 3 llamadas LLM)
+  // 60 s: el pipeline RAG puede tardar (clasificación + retrieval + 1-3 llamadas LLM).
+  // Vercel Hobby corta a 10 s → por eso el frontend debe llamar directo al HF Space.
+  timeout: 60_000,
 })
 
 // ── Tipos de error estructurados ─────────────────────────────────────────────
