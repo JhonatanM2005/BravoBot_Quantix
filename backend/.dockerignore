@@ -1,0 +1,34 @@
+# ── Python cache ──────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Entornos virtuales ────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Base de datos vectorial (se monta como volumen en runtime) ────
+chroma_db/
+
+# ── Datos de ingesta (no necesarios en la imagen de producción) ───
+data/raw/
+data/scraped/
+
+# ── Variables de entorno (secretos) ──────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Miscelánea ────────────────────────────────────────────────────
+.git/
+.gitignore
+*.md

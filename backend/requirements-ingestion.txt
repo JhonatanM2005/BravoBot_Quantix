@@ -1,0 +1,6 @@
+# Dependencias exclusivas de los scripts de ingesta/scraping.
+# NO se instalan en la imagen Docker de producción.
+# Instalar localmente con: pip install -r requirements-ingestion.txt
+playwright>=1.44.0
+beautifulsoup4>=4.12.3
+pdfplumber>=0.11.1

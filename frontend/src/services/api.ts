@@ -15,7 +15,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
 const client = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30_000, // 30 s — el pipeline RAG puede tardar
+  timeout: 60_000, // 60 s — el pipeline RAG puede tardar (followup hace 3 llamadas LLM)
 })
 
 // ── Tipos de error estructurados ─────────────────────────────────────────────

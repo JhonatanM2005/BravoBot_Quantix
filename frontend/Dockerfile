@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ─────────────────────────────────────────────────────────────────
 # Frontend Dockerfile — Multi-stage
 # Stage 1: build Vite
@@ -10,8 +11,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Instalar dependencias primero (aprovecha cache de capas)
+# --mount=type=cache persiste el caché de npm entre builds (BuildKit)
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --cache /root/.npm
 
 # Copiar código fuente y construir
 COPY . .

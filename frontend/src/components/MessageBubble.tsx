@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import SourcesList from './SourcesList'
 
 export interface Message {
@@ -6,6 +8,7 @@ export interface Message {
   content: string
   fuentes?: string[]
   categoria?: string
+  intent?: string
 }
 
 // ── Category badge colours ──────────────────────────────────────────────────
@@ -14,8 +17,18 @@ const CATEGORIA_MAP: Record<string, { label: string; color: string }> = {
   programas: { label: 'Programas', color: '#4E3D98' },
   costos: { label: 'Costos', color: '#F29A01' },
   bienestar: { label: 'Bienestar', color: '#00B87C' },
+  becas: { label: 'Becas', color: '#2E7D32' },
+  institucional: { label: 'Institucional', color: '#5D4037' },
   noticias: { label: 'Noticias', color: '#D8473A' },
   general: { label: 'General', color: '#4E4E4E' },
+}
+
+// ── Intent badge (only shown for special modes) ────────────────────────────
+const INTENT_MAP: Record<string, { label: string; color: string }> = {
+  comparison: { label: '⚖️ Comparación', color: '#6A1B9A' },
+  recommendation: { label: '✨ Recomendación', color: '#00695C' },
+  conversational: { label: '💬 Conversacional', color: '#1565C0' },
+  followup: { label: '↩️ Seguimiento', color: '#546E7A' },
 }
 
 function CategoriaBadge({ categoria }: { categoria: string }) {
@@ -26,6 +39,19 @@ function CategoriaBadge({ categoria }: { categoria: string }) {
   return (
     <span
       className="inline-flex items-center gap-1 text-[10px] font-heading font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white"
+      style={{ backgroundColor: meta.color }}
+    >
+      {meta.label}
+    </span>
+  )
+}
+
+function IntentBadge({ intent }: { intent: string }) {
+  const meta = INTENT_MAP[intent]
+  if (!meta) return null
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[10px] font-heading font-semibold px-2 py-0.5 rounded-full text-white"
       style={{ backgroundColor: meta.color }}
     >
       {meta.label}
@@ -57,9 +83,12 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       {/* Content column */}
       <div className={`max-w-[78%] flex flex-col gap-1 ${isUser ? 'items-end' : 'items-start'}`}>
 
-        {/* Category badge (bot only) */}
-        {!isUser && message.categoria && (
-          <CategoriaBadge categoria={message.categoria} />
+        {/* Badges row (bot only) */}
+        {!isUser && (message.categoria || message.intent) && (
+          <div className="flex flex-wrap gap-1">
+            {message.intent && <IntentBadge intent={message.intent} />}
+            {message.categoria && <CategoriaBadge categoria={message.categoria} />}
+          </div>
         )}
 
         {/* Bubble */}
@@ -72,14 +101,44 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           {isUser ? (
             <span className="whitespace-pre-wrap font-body">{message.content}</span>
           ) : (
-            <div
-              className="bot-prose font-body whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{
-                __html: message.content
-                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/\n/g, '<br/>'),
-              }}
-            />
+            <div className="bot-prose font-body">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto my-2">
+                      <table className="min-w-full border-collapse text-xs">{children}</table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-pb-navy/10">{children}</thead>
+                  ),
+                  th: ({ children }) => (
+                    <th className="border border-gray-200 px-3 py-1.5 text-left font-semibold text-pb-navy">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="border border-gray-200 px-3 py-1.5">{children}</td>
+                  ),
+                  tr: ({ children }) => (
+                    <tr className="even:bg-gray-50">{children}</tr>
+                  ),
+                  p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                  ul: ({ children }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
+                  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                  a: ({ href, children }) => (
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-pb-aqua hover:underline">
+                      {children}
+                    </a>
+                  ),
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
 

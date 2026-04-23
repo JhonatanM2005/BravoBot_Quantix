@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ─────────────────────────────────────────────────────────────────
 # Backend Dockerfile — Python 3.11 + FastAPI + uvicorn
 # ─────────────────────────────────────────────────────────────────
@@ -16,8 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar dependencias Python primero (aprovecha cache de capas)
+# --mount=type=cache persiste el caché de wheels entre builds (BuildKit)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
 # Copiar código fuente del backend
 COPY . .

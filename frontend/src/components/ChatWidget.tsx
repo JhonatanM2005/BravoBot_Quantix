@@ -98,6 +98,7 @@ export default function ChatWidget() {
         content: data.respuesta,
         fuentes: data.fuentes,
         categoria: data.categoria,
+        intent: data.intent,
       }
       setMessages((prev) => [...prev, botMsg])
     } catch (err) {

@@ -1,0 +1,15 @@
+# ── Dependencias (se reinstalan en el build) ─────────────────────
+node_modules/
+
+# ── Build anterior (se regenera en el build) ─────────────────────
+dist/
+
+# ── Variables de entorno ─────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Miscelánea ───────────────────────────────────────────────────
+.git/
+.gitignore
+*.md

@@ -74,6 +74,7 @@ class ChatResponse(BaseModel):
     fuentes: list[str]
     categoria: str
     categorias: list[str]
+    intent: str | None = None
     session_id: str | None = None
 
 
@@ -127,6 +128,7 @@ async def chat(request: ChatRequest):
             fuentes=result["fuentes"],
             categoria=result["categoria"],
             categorias=result.get("categorias", [result["categoria"]]),
+            intent=result.get("intent"),
             session_id=clean_session_id,
         )
     except HTTPException:

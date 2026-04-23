@@ -16,12 +16,76 @@ const SUGGESTIONS = [
   { icon: '🏢', text: '¿Cuál es la oferta de posgrados?' },
 ]
 
+// ── Chips de seguimiento según intención y categoría ───────────────────────
+const FOLLOWUP_CHIPS: Record<string, { icon: string; text: string }[]> = {
+  'intent:comparison': [
+    { icon: '💰', text: '¿Cuáles son los costos de cada uno?' },
+    { icon: '📚', text: 'Muéstrame la malla curricular de cada uno' },
+    { icon: '✨', text: '¿Cuál me recomendás según mi perfil?' },
+  ],
+  'intent:recommendation': [
+    { icon: 'ℹ️', text: 'Más información sobre esa carrera' },
+    { icon: '💰', text: '¿Cuánto cuesta estudiar ahí?' },
+    { icon: '📚', text: '¿Qué materias tiene?' },
+  ],
+  'intent:conversational': [
+    { icon: '🔍', text: 'Amplía ese punto' },
+    { icon: '⚖️', text: '¿Qué programas tienen más salidas laborales?' },
+  ],
+  'categoria:programas': [
+    { icon: '⚖️', text: 'Compara ese programa con otro' },
+    { icon: '💰', text: '¿Cuánto cuesta ese programa?' },
+    { icon: '📝', text: 'Resúmeme esa información' },
+  ],
+  'categoria:costos': [
+    { icon: '🏆', text: '¿Hay becas disponibles?' },
+    { icon: '⚖️', text: 'Compara costos entre programas' },
+    { icon: '📝', text: 'Resúmeme esa información' },
+  ],
+  'categoria:admisiones': [
+    { icon: '📄', text: '¿Qué documentos necesito?' },
+    { icon: '📝', text: 'Resúmeme los pasos de inscripción' },
+    { icon: '📅', text: '¿Cuándo son las próximas fechas?' },
+  ],
+  'categoria:bienestar': [
+    { icon: '🌐', text: '¿Cómo es el programa de inglés?' },
+    { icon: '💪', text: '¿Qué servicios deportivos ofrecen?' },
+    { icon: '📝', text: 'Explícame más sobre bienestar' },
+  ],
+  'categoria:becas': [
+    { icon: '💰', text: '¿Cuáles son los costos de matrícula?' },
+    { icon: '📋', text: '¿Cómo aplico a una beca?' },
+    { icon: '📝', text: 'Resúmeme los tipos de beca' },
+  ],
+  'default': [
+    { icon: '🔍', text: 'Explícame más sobre eso' },
+    { icon: '📝', text: 'Resúmeme esa respuesta' },
+    { icon: '❓', text: '¿Qué más debería saber?' },
+  ],
+}
+
+function getFollowupChips(msg: Message): { icon: string; text: string }[] {
+  if (msg.intent && `intent:${msg.intent}` in FOLLOWUP_CHIPS) {
+    return FOLLOWUP_CHIPS[`intent:${msg.intent}`]
+  }
+  if (msg.categoria && `categoria:${msg.categoria}` in FOLLOWUP_CHIPS) {
+    return FOLLOWUP_CHIPS[`categoria:${msg.categoria}`]
+  }
+  return FOLLOWUP_CHIPS['default']
+}
+
 export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
+
+  // Find index of last bot message to show follow-up chips there
+  const lastBotIdx = messages.reduceRight(
+    (found, msg, idx) => (found === -1 && msg.role === 'bot' ? idx : found),
+    -1,
+  )
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6">
@@ -47,7 +111,7 @@ export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWi
               Tu asistente institucional de la{' '}
               <span className="font-semibold text-pb-navy">I.U. Pascual Bravo</span>.
               <br />
-              Pregúntame sobre admisiones, programas, costos y más.
+              Pregúntame sobre admisiones, programas, costos, compara carreras y más.
             </p>
           </div>
 
@@ -72,8 +136,26 @@ export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWi
       {/* ── Messages ── */}
       {messages.length > 0 && (
         <div className="space-y-5 max-w-3xl mx-auto">
-          {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
+          {messages.map((msg, idx) => (
+            <div key={msg.id}>
+              <MessageBubble message={msg} />
+
+              {/* Follow-up chips — only after last bot message, only when not loading */}
+              {!isLoading && idx === lastBotIdx && msg.role === 'bot' && (
+                <div className="mt-2 ml-12 flex flex-wrap gap-1.5 animate-fade-in">
+                  {getFollowupChips(msg).map((chip) => (
+                    <button
+                      key={chip.text}
+                      onClick={() => onSuggestion(chip.text)}
+                      className="inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-pb-aqua hover:text-pb-aqua rounded-full px-3 py-1 text-[11px] font-body font-medium text-pb-gray shadow-sm transition-all duration-150"
+                    >
+                      <span>{chip.icon}</span>
+                      <span>{chip.text}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
 
           {/* Typing indicator */}

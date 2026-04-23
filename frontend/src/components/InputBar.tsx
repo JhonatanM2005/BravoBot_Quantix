@@ -98,7 +98,7 @@ export default function InputBar({ onSend, disabled }: InputBarProps) {
 
         {/* Footer hint */}
         <p className="mt-2 text-center text-[10px] font-body text-gray-400 leading-none">
-          BravoBot responde únicamente con información oficial de{' '}
+          Puedo comparar programas, recomendar carreras y responder sobre{' '}
           <a
             href="https://pascualbravo.edu.co"
             target="_blank" rel="noopener noreferrer"

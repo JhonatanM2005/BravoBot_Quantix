@@ -15,6 +15,7 @@ export interface ChatResponse {
   fuentes: string[]
   categoria: string
   categorias: string[]
+  intent?: string
   session_id?: string
 }
 
@@ -36,4 +37,5 @@ export interface Message {
   content: string
   fuentes?: string[]
   categoria?: string
+  intent?: string
 }
