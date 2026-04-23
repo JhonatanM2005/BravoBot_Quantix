@@ -62,7 +62,7 @@ URLS = [
     # ── MEDIA PRIORIDAD ── Becas, Bienestar y Servicios ──────────────────────
     {
         "url": "https://sites.google.com/pascualbravo.edu.co/bienestariupascual/inicio/socioecon%C3%B3mica?authuser=0",
-        "categoria": "becas",
+        "categoria": "bienestar",
         "scraper": "static",
         "follow_programs": False,
         "follow_calendar": False,

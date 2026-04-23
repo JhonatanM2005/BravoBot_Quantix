@@ -28,6 +28,7 @@ BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "backend" / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 RAW_PAGES_PATH = DATA_DIR / "raw_pages.json"
+MANUAL_DOCS_PATH = DATA_DIR / "manual_docs.json"
 
 load_dotenv(BASE_DIR / "backend" / ".env")
 
@@ -103,6 +104,31 @@ async def run_scraping() -> list[dict]:
     return unique_docs
 
 
+def load_manual_docs() -> list[dict]:
+    """Carga documentos curados de manual_docs.json.
+    Los docs con texto que empiece por 'TODO:' se omiten (son placeholders).
+    Retorna lista vacía si el archivo no existe o no hay docs válidos.
+    """
+    if not MANUAL_DOCS_PATH.exists():
+        return []
+    try:
+        raw = json.loads(MANUAL_DOCS_PATH.read_text(encoding="utf-8"))
+        valid = [
+            doc for doc in raw
+            if isinstance(doc.get("texto"), str)
+            and not doc["texto"].strip().startswith("TODO:")
+            and doc["texto"].strip()
+        ]
+        if valid:
+            logger.info(f"manual_docs.json: {len(valid)} documento(s) curado(s) cargado(s).")
+        else:
+            logger.info("manual_docs.json: sin documentos válidos (todos son placeholders).")
+        return valid
+    except Exception as exc:
+        logger.warning(f"No se pudo leer manual_docs.json: {exc}")
+        return []
+
+
 def save_raw(docs: list[dict]) -> None:
     RAW_PAGES_PATH.write_text(
         json.dumps(docs, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -136,11 +162,20 @@ async def main() -> None:
     if args.index_only:
         docs = load_raw()
         logger.info(f"Cargados {len(docs)} documentos desde {RAW_PAGES_PATH}")
+        manual = load_manual_docs()
+        if manual:
+            docs = docs + manual
+            logger.info(f"Total con docs manuales: {len(docs)} documentos")
         run_indexing(docs, reset=args.reset)
         return
 
     docs = await run_scraping()
     save_raw(docs)
+
+    manual = load_manual_docs()
+    if manual:
+        docs = docs + manual
+        logger.info(f"Total con docs manuales: {len(docs)} documentos")
 
     if not args.scrape_only:
         run_indexing(docs, reset=args.reset)

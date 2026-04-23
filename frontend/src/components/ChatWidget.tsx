@@ -5,6 +5,7 @@ import { Message } from './MessageBubble'
 import { sendMessage as apiSendMessage } from '../services/api'
 import type { ApiError } from '../services/api'
 import { useHealthCheck } from '../hooks/useHealthCheck'
+import { useWizard, WIZARD_STEPS, buildWizardQuery, WIZARD_TRIGGER_PATTERNS } from '../hooks/useWizard'
 
 // ── Constantes ──────────────────────────────────────────────────────────────
 const SESSION_KEY = 'bravobot_session_id'
@@ -64,6 +65,10 @@ function CloseIcon() {
   )
 }
 
+function shouldStartWizard(text: string): boolean {
+  return WIZARD_TRIGGER_PATTERNS.some((p) => p.test(text))
+}
+
 export default function ChatWidget() {
   const [isOpen, setIsOpen]     = useState(false)
   const [messages, setMessages] = useState<Message[]>(loadMessages)
@@ -75,19 +80,19 @@ export default function ChatWidget() {
   // Health check al montar el componente
   const backendStatus = useHealthCheck()
 
+  // Wizard de orientación
+  const wizard = useWizard()
+
   // Persistir mensajes cada vez que cambian
   useEffect(() => {
     saveMessages(messages)
   }, [messages])
 
-  const sendMessage = async (text: string) => {
-    const userMsg: Message = { id: nextId(), role: 'user', content: text }
-    setMessages((prev) => [...prev, userMsg])
+  /** Envía la query al backend y añade la respuesta del bot. No añade mensaje de usuario. */
+  const sendToBackend = async (query: string) => {
     setIsLoading(true)
-
     try {
-      const data = await apiSendMessage(text, sessionIdRef.current)
-      // Si el backend devuelve un session_id actualizado, sincronizarlo
+      const data = await apiSendMessage(query, sessionIdRef.current)
       if (data.session_id && data.session_id !== sessionIdRef.current) {
         sessionIdRef.current = data.session_id
         localStorage.setItem(SESSION_KEY, data.session_id)
@@ -113,18 +118,93 @@ export default function ChatWidget() {
     }
   }
 
+  /** Maneja la respuesta del usuario a una pregunta del wizard */
+  const handleWizardAnswer = (value: string) => {
+    const userMsg: Message = { id: nextId(), role: 'user', content: value }
+    const { nextStep, nextAnswers } = wizard.answerStep(value)
+
+    if (nextStep === 0) {
+      // Todas las preguntas respondidas — construir query y enviar al backend
+      const query = buildWizardQuery(nextAnswers)
+      setMessages((prev) => [...prev, userMsg])
+      sendToBackend(query)
+    } else {
+      // Mostrar la siguiente pregunta del wizard
+      const nextStepDef = WIZARD_STEPS[nextStep - 1]
+      const botMsg: Message = {
+        id: nextId(),
+        role: 'bot',
+        content: nextStepDef.question,
+        wizardOptions: nextStepDef.options,
+        intent: 'wizard',
+      }
+      setMessages((prev) => [...prev, userMsg, botMsg])
+    }
+  }
+
+  /** Inicia el wizard desde el chip de la pantalla de bienvenida */
+  const handleWizardStart = () => {
+    if (isLoading) return
+    const firstStep = WIZARD_STEPS[0]
+    const introMsg: Message = {
+      id: nextId(),
+      role: 'bot',
+      content:
+        '¡Perfecto! Voy a ayudarte a encontrar el programa ideal para ti. ' +
+        'Solo necesito que respondas **4 preguntas rápidas** 🎯\n\n' +
+        firstStep.question,
+      wizardOptions: firstStep.options,
+      intent: 'wizard',
+    }
+    wizard.startWizard()
+    setMessages((prev) => [...prev, introMsg])
+  }
+
+  const sendMessage = async (text: string) => {
+    // Ruta 1: wizard activo — procesar como respuesta al wizard
+    if (wizard.isActive) {
+      handleWizardAnswer(text)
+      return
+    }
+
+    // Ruta 2: frase de orientación detectada — iniciar wizard
+    if (shouldStartWizard(text)) {
+      const userMsg: Message = { id: nextId(), role: 'user', content: text }
+      const firstStep = WIZARD_STEPS[0]
+      const botMsg: Message = {
+        id: nextId(),
+        role: 'bot',
+        content:
+          '¡Claro! Voy a ayudarte a encontrar el programa ideal. ' +
+          'Te haré **4 preguntas rápidas** para personalizar mi recomendación 🎯\n\n' +
+          firstStep.question,
+        wizardOptions: firstStep.options,
+        intent: 'wizard',
+      }
+      wizard.startWizard()
+      setMessages((prev) => [...prev, userMsg, botMsg])
+      return
+    }
+
+    // Ruta 3: consulta normal al pipeline RAG
+    const userMsg: Message = { id: nextId(), role: 'user', content: text }
+    setMessages((prev) => [...prev, userMsg])
+    await sendToBackend(text)
+  }
+
   const handleSuggestion = (text: string) => {
     if (isLoading) return
     sendMessage(text)
   }
 
-  /** Nueva conversación: limpia mensajes y regenera session_id */
+  /** Nueva conversación: limpia mensajes, reinicia session_id y wizard */
   const handleNewConversation = () => {
     setMessages([])
     localStorage.removeItem(MESSAGES_KEY)
     const newId = crypto.randomUUID().replace(/-/g, '').slice(0, 32)
     sessionIdRef.current = newId
     localStorage.setItem(SESSION_KEY, newId)
+    wizard.resetWizard()
   }
 
   // ── Indicador de estado del backend ────────────────────────────────────────
@@ -299,7 +379,13 @@ export default function ChatWidget() {
 
         {/* Chat body */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <ChatWindow messages={messages} isLoading={isLoading} onSuggestion={handleSuggestion} />
+          <ChatWindow
+            messages={messages}
+            isLoading={isLoading}
+            onSuggestion={handleSuggestion}
+            onWizardStart={handleWizardStart}
+            onWizardAnswer={handleWizardAnswer}
+          />
           <InputBar onSend={sendMessage} disabled={isLoading || backendStatus === 'offline'} />
         </div>
       </div>

@@ -5,6 +5,8 @@ interface ChatWindowProps {
   messages: Message[]
   isLoading: boolean
   onSuggestion: (text: string) => void
+  onWizardStart: () => void
+  onWizardAnswer: (value: string) => void
 }
 
 const SUGGESTIONS = [
@@ -74,7 +76,7 @@ function getFollowupChips(msg: Message): { icon: string; text: string }[] {
   return FOLLOWUP_CHIPS['default']
 }
 
-export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWindowProps) {
+export default function ChatWindow({ messages, isLoading, onSuggestion, onWizardStart, onWizardAnswer }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -115,6 +117,29 @@ export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWi
             </p>
           </div>
 
+          {/* Wizard entry CTA */}
+          <button
+            onClick={onWizardStart}
+            className="w-full max-w-lg flex items-center gap-3 rounded-2xl px-5 py-4 text-left shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-[1.02] active:scale-[0.99]"
+            style={{
+              background: 'linear-gradient(135deg, #001A34 0%, #0F385A 100%)',
+              border: '1px solid rgba(2,153,216,0.25)',
+            }}
+          >
+            <span className="text-3xl flex-shrink-0">🎯</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-heading font-bold text-white leading-tight">
+                Ayúdame a elegir una carrera
+              </div>
+              <div className="text-[11px] font-body text-white/65 mt-0.5 leading-tight">
+                Responde 4 preguntas rápidas y recibe recomendaciones personalizadas
+              </div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+
           {/* Suggestion chips */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-lg">
             {SUGGESTIONS.map((s) => (
@@ -138,10 +163,10 @@ export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWi
         <div className="space-y-5 max-w-3xl mx-auto">
           {messages.map((msg, idx) => (
             <div key={msg.id}>
-              <MessageBubble message={msg} />
+              <MessageBubble message={msg} onWizardAnswer={onWizardAnswer} />
 
               {/* Follow-up chips — only after last bot message, only when not loading */}
-              {!isLoading && idx === lastBotIdx && msg.role === 'bot' && (
+              {!isLoading && idx === lastBotIdx && msg.role === 'bot' && !msg.wizardOptions && (
                 <div className="mt-2 ml-12 flex flex-wrap gap-1.5 animate-fade-in">
                   {getFollowupChips(msg).map((chip) => (
                     <button

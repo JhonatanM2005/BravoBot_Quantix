@@ -2,6 +2,12 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import SourcesList from './SourcesList'
 
+export interface WizardOption {
+  icon: string
+  label: string
+  value: string
+}
+
 export interface Message {
   id: string
   role: 'user' | 'bot'
@@ -9,6 +15,7 @@ export interface Message {
   fuentes?: string[]
   categoria?: string
   intent?: string
+  wizardOptions?: WizardOption[]
 }
 
 // ── Category badge colours ──────────────────────────────────────────────────
@@ -29,6 +36,7 @@ const INTENT_MAP: Record<string, { label: string; color: string }> = {
   recommendation: { label: '✨ Recomendación', color: '#00695C' },
   conversational: { label: '💬 Conversacional', color: '#1565C0' },
   followup: { label: '↩️ Seguimiento', color: '#546E7A' },
+  wizard: { label: '🎯 Orientación', color: '#0077B6' },
 }
 
 function CategoriaBadge({ categoria }: { categoria: string }) {
@@ -61,9 +69,10 @@ function IntentBadge({ intent }: { intent: string }) {
 
 interface MessageBubbleProps {
   message: Message
+  onWizardAnswer?: (value: string) => void
 }
 
-export default function MessageBubble({ message }: MessageBubbleProps) {
+export default function MessageBubble({ message, onWizardAnswer }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
   return (
@@ -141,6 +150,22 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             </div>
           )}
         </div>
+
+        {/* Wizard option chips (bot only) */}
+        {!isUser && message.wizardOptions && message.wizardOptions.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-1">
+            {message.wizardOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => onWizardAnswer?.(opt.value)}
+                className="inline-flex items-center gap-1.5 bg-white border border-pb-aqua/30 hover:border-pb-aqua hover:bg-pb-aqua/5 rounded-xl px-3 py-2 text-xs font-body font-medium text-pb-navy shadow-sm transition-all duration-150 active:scale-95"
+              >
+                <span className="text-sm">{opt.icon}</span>
+                <span>{opt.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Sources (bot only) */}
         {!isUser && message.fuentes && message.fuentes.length > 0 && (
